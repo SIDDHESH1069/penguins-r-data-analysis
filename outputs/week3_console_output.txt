@@ -1,0 +1,300 @@
+== Dimensions: cleaned / modelling ==
+[1] 342   8
+[1] 333   8
+
+== str(model_df) ==
+'data.frame':	333 obs. of  8 variables:
+ $ species          : Factor w/ 3 levels "Adelie","Chinstrap",..: 1 1 1 1 1 1 1 1 1 1 ...
+ $ island           : Factor w/ 3 levels "Biscoe","Dream",..: 3 3 3 3 3 3 3 3 3 3 ...
+ $ bill_length_mm   : num  39.1 39.5 40.3 36.7 39.3 38.9 39.2 41.1 38.6 34.6 ...
+ $ bill_depth_mm    : num  18.7 17.4 18 19.3 20.6 17.8 19.6 17.6 21.2 21.1 ...
+ $ flipper_length_mm: int  181 186 195 193 190 181 195 182 191 198 ...
+ $ body_mass_g      : int  3750 3800 3250 3450 3650 3625 4675 3200 3800 4400 ...
+ $ sex              : Factor w/ 2 levels "female","male": 2 1 1 1 2 1 2 1 2 2 ...
+ $ year             : Factor w/ 3 levels "2007","2008",..: 1 1 1 1 1 1 1 1 1 1 ...
+
+== summary of predictors ==
+ bill_length_mm  bill_depth_mm   flipper_length_mm  body_mass_g  
+ Min.   :32.10   Min.   :13.10   Min.   :172       Min.   :2700  
+ 1st Qu.:39.50   1st Qu.:15.60   1st Qu.:190       1st Qu.:3550  
+ Median :44.50   Median :17.30   Median :197       Median :4050  
+ Mean   :43.99   Mean   :17.16   Mean   :201       Mean   :4207  
+ 3rd Qu.:48.60   3rd Qu.:18.70   3rd Qu.:213       3rd Qu.:4775  
+ Max.   :59.60   Max.   :21.50   Max.   :231       Max.   :6300  
+
+== Class balance (sex) ==
+
+female   male 
+   165    168 
+
+== sex x species ==
+        
+         Adelie Chinstrap Gentoo
+  female     73        34     58
+  male       73        34     61
+
+
+########## 2. HYPOTHESIS TESTING ##########
+
+== H0-1 Shapiro-Wilk normality tests (whole sample) ==
+                       W p
+bill_length_mm    0.9743 0
+bill_depth_mm     0.9733 0
+flipper_length_mm 0.9517 0
+body_mass_g       0.9580 0
+
+== Shapiro-Wilk within species x sex strata (body mass) ==
+   Adelie.female Chinstrap.female    Gentoo.female      Adelie.male 
+          0.1985           0.3055           0.5107           0.4160 
+  Chinstrap.male      Gentoo.male 
+          0.8910           0.9850 
+
+== H0-2 Equality of variances (Bartlett, mass ~ sex) ==
+
+	Bartlett test of homogeneity of variances
+
+data:  body_mass_g by sex
+Bartlett's K-squared = 4.6017, df = 1, p-value = 0.03194
+
+
+== H0-3 Welch two-sample t-tests: predictor ~ sex ==
+                  mean_female mean_male     diff       t       df p_t p_wilcox
+bill_length_mm        42.0970   45.8548   3.7578 -6.6725 329.2903   0        0
+bill_depth_mm         16.4255   17.8911   1.4656 -7.3090 330.8816   0        0
+flipper_length_mm    197.3636  204.5060   7.1423 -4.8079 325.2784   0        0
+body_mass_g         3862.2727 4545.6845 683.4118 -8.5545 323.8959   0        0
+                  cohens_d
+bill_length_mm      0.6871
+bill_depth_mm       0.7443
+flipper_length_mm   0.5096
+body_mass_g         0.8487
+
+== H0-4 Two-way ANOVA: body mass ~ species * sex ==
+             Df    Sum Sq  Mean Sq F value   Pr(>F)    
+species       2 145190219 72595110 758.358  < 2e-16 ***
+sex           1  37090262 37090262 387.460  < 2e-16 ***
+species:sex   2   1676557   838278   8.757 0.000197 ***
+Residuals   327  31302628    95727                     
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+== H0-5 Chi-square: is sex independent of species? ==
+
+	Pearson's Chi-squared test
+
+data:  table(model_df$species, model_df$sex)
+X-squared = 0.048607, df = 2, p-value = 0.976
+
+
+== H0-6 Pearson correlations among predictors ==
+                  bill_length_mm bill_depth_mm flipper_length_mm body_mass_g
+bill_length_mm             1.000        -0.229             0.653       0.589
+bill_depth_mm             -0.229         1.000            -0.578      -0.472
+flipper_length_mm          0.653        -0.578             1.000       0.873
+body_mass_g                0.589        -0.472             0.873       1.000
+
+Pairwise correlation tests (r, p):
+           r p
+[1,] -0.2286 0
+[2,]  0.6531 0
+[3,]  0.5895 0
+[4,] -0.5778 0
+[5,] -0.4720 0
+[6,]  0.8730 0
+
+Variance inflation proxy - correlation of predictors within species:
+   Adelie Chinstrap    Gentoo 
+    0.465     0.642     0.711 
+
+
+########## 3. MODEL BUILDING ##########
+
+== Fold sizes ==
+     
+folds female male
+   1      17   17
+   2      17   17
+   3      17   17
+   4      17   17
+   5      17   17
+   6      16   17
+   7      16   17
+   8      16   17
+   9      16   16
+   10     16   16
+Warning message:
+glm.fit: fitted probabilities numerically 0 or 1 occurred 
+
+== 10-fold cross-validated performance (threshold 0.5) ==
+             accuracy sensitivity specificity precision     f1    auc  brier
+M1_mass_only   0.6126      0.5655      0.6606    0.6291 0.5956 0.7490 0.2097
+M2_all_num     0.8949      0.8929      0.8970    0.8982 0.8955 0.9582 0.0778
+M3_plus_spp    0.9099      0.9107      0.9091    0.9107 0.9107 0.9674 0.0668
+M4_spp_inter   0.8979      0.8988      0.8970    0.8988 0.8988 0.9685 0.0685
+
+== LDA benchmark (same folds, M3 predictors) ==
+   accuracy sensitivity specificity   precision          f1         auc 
+     0.9039      0.8929      0.9152      0.9146      0.9036      0.9705 
+      brier 
+     0.0660 
+
+== Per-fold accuracy of M3_plus_spp ==
+ [1] 0.9118 0.9118 0.8824 0.9412 0.9706 0.9697 0.7576 0.9091 0.9375 0.9062
+mean = 0.9098  sd = 0.0605 
+
+== summary(final model) ==
+
+Call:
+glm(formula = forms[[best]], family = binomial(), data = model_df)
+
+Coefficients:
+                    Estimate Std. Error z value Pr(>|z|)    
+(Intercept)       -79.025008  12.115328  -6.523 6.90e-11 ***
+bill_length_mm      0.613782   0.131008   4.685 2.80e-06 ***
+bill_depth_mm       1.622861   0.332403   4.882 1.05e-06 ***
+flipper_length_mm   0.020774   0.047829   0.434 0.664046    
+body_mass_g         0.005865   0.001083   5.414 6.15e-08 ***
+speciesChinstrap   -6.980329   1.574297  -4.434 9.25e-06 ***
+speciesGentoo      -8.353895   2.523542  -3.310 0.000932 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 461.61  on 332  degrees of freedom
+Residual deviance: 127.11  on 326  degrees of freedom
+AIC: 141.11
+
+Number of Fisher Scoring iterations: 7
+
+
+== Odds ratios with 95% profile CI ==
+                      OR  2.5 %  97.5 %
+(Intercept)       0.0000 0.0000  0.0000
+bill_length_mm    1.8474 1.4579  2.4449
+bill_depth_mm     5.0676 2.7675 10.2847
+flipper_length_mm 1.0210 0.9295  1.1225
+body_mass_g       1.0059 1.0039  1.0082
+speciesChinstrap  0.0009 0.0000  0.0159
+speciesGentoo     0.0002 0.0000  0.0258
+
+== Likelihood-ratio test vs null, and vs M2 (no species) ==
+Analysis of Deviance Table
+
+Model 1: sex ~ bill_length_mm + bill_depth_mm + flipper_length_mm + body_mass_g
+Model 2: sex ~ bill_length_mm + bill_depth_mm + flipper_length_mm + body_mass_g + 
+    species
+  Resid. Df Resid. Dev Df Deviance  Pr(>Chi)    
+1       328     159.00                          
+2       326     127.11  2   31.895 1.186e-07 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+McFadden pseudo R2 = 0.7246  AIC: 169 -> 141.1 
+
+== Confusion matrix (out-of-fold, M3_plus_spp ) ==
+         Actual
+Predicted female male
+   female    150   15
+   male       15  153
+
+== Accuracy-optimal threshold == 0.34 
+   accuracy sensitivity specificity   precision          f1         auc 
+     0.9129      0.9464      0.8788      0.8883      0.9164      0.9674 
+      brier 
+     0.0668 
+
+== Calibration table ==
+            mid   obs   n
+[0,0.1]   0.022 0.031 127
+(0.1,0.2] 0.143 0.125  16
+(0.2,0.3] 0.238 0.333   6
+(0.3,0.4] 0.321 0.333   6
+(0.4,0.5] 0.439 0.500  10
+(0.5,0.6] 0.547 0.556   9
+(0.6,0.7] 0.662 0.667  12
+(0.7,0.8] 0.753 1.000   8
+(0.8,0.9] 0.845 0.818  11
+(0.9,1]   0.987 0.961 128
+
+
+########## 4. DIAGNOSTICS ##########
+
+== Most influential observations (Cook's D) ==
+    obs       cook         lev       std   species
+294 283 0.30545001 0.038358360 -2.870448 Chinstrap
+115 109 0.12097674 0.002772148 -3.386892    Adelie
+298 287 0.07310329 0.009882704  2.823485 Chinstrap
+285 274 0.07090997 0.108360330 -1.855617 Chinstrap
+325 314 0.06169198 0.112965115  1.769218 Chinstrap
+38   33 0.05489455 0.076130032 -1.900947    Adelie
+
+Max Cook's D = 0.3055  (rule of thumb cut-off 1)
+
+== Secondary linear model: body mass ~ flipper + species + sex ==
+
+Call:
+lm(formula = body_mass_g ~ flipper_length_mm + species + sex, 
+    data = model_df)
+
+Residuals:
+   Min     1Q Median     3Q    Max 
+-721.8 -195.7   -5.9  198.6  873.7 
+
+Coefficients:
+                  Estimate Std. Error t value Pr(>|t|)    
+(Intercept)       -365.817    532.050  -0.688   0.4922    
+flipper_length_mm   20.025      2.846   7.037 1.15e-11 ***
+speciesChinstrap   -87.634     46.347  -1.891   0.0595 .  
+speciesGentoo      836.260     85.185   9.817  < 2e-16 ***
+sexmale            530.381     37.810  14.027  < 2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 295.6 on 328 degrees of freedom
+Multiple R-squared:  0.8669,	Adjusted R-squared:  0.8653 
+F-statistic:   534 on 4 and 328 DF,  p-value: < 2.2e-16
+
+
+== 10-fold CV RMSE / MAE / R2 for the linear model ==
+RMSE = 297.3  MAE = 241.8  CV R2 = 0.8632 
+
+Shapiro-Wilk on lm residuals:
+
+	Shapiro-Wilk normality test
+
+data:  residuals(lm_fit)
+W = 0.99708, p-value = 0.8169
+
+null device 
+          1 
+
+== Stepwise AIC search (M4 interaction model as scope) ==
+sex ~ species + bill_depth_mm + body_mass_g + bill_length_mm + 
+    species:bill_depth_mm + species:body_mass_g
+AIC: 135.92 vs champion 141.11 
+
+== CV metrics of the stepwise model ==
+   accuracy sensitivity specificity   precision          f1         auc 
+     0.9069      0.9107      0.9030      0.9053      0.9080      0.9706 
+      brier 
+     0.0647 
+
+== 10 x 10-fold repeated CV accuracy of the champion ==
+ [1] 0.9159 0.9099 0.9129 0.9099 0.9129 0.9129 0.9129 0.9159 0.9219 0.9099
+mean = 0.9135  sd = 0.0037  range = 0.9099 0.9219 
+
+== Predictions for the 9 penguins whose sex was never recorded ==
+ species bill_length_mm bill_depth_mm flipper_length_mm body_mass_g p_male
+  Adelie           34.1          18.1               193        3475  0.013
+  Adelie           42.0          20.2               190        4250  1.000
+  Adelie           37.8          17.1               186        3300  0.008
+  Adelie           37.8          17.3               180        3700  0.090
+  Adelie           37.5          18.9               179        2975  0.015
+  Gentoo           44.5          14.3               216        4100  0.000
+  Gentoo           46.2          14.4               214        4650  0.019
+  Gentoo           47.3          13.8               216        4725  0.023
+  Gentoo           44.5          15.7               217        4875  0.185
+
+== Environment ==
+R version 4.5.1 (2025-06-13) | ggplot2 3.5.2 | MASS 7.3.65 
