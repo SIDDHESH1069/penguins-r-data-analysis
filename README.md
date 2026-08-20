@@ -42,7 +42,6 @@ The goal is to turn a raw, slightly messy ecological dataset into a clear story:
 | File | Description |
 |---|---|
 | `week2_viz.R` | Self-contained R script that downloads the data and produces all 10 figures plus the statistics |
-| `week2_console_output.txt` | Verbatim console output (summaries, ANOVA, regression) |
 | `penguins.csv` | The dataset used |
 | `Week2_Data_Visualization_and_Insight_Communication_R.docx` | Full written report with narrative, code, figures and interpretation |
 
